@@ -1,0 +1,4 @@
+-main TyrantTest
+-x tyrant_test
+-cp ..
+-cp ../caffeine-hx

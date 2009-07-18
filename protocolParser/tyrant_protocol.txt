@@ -1,0 +1,124 @@
+Method|put
+Request|[magic:2][ksiz:4][vsiz:4][kbuf:*][vbuf:*]
+Magic|0xC8 0x10
+Response|[code:1]
+
+Method|putkeep
+Request|[magic:2][ksiz:4][vsiz:4][kbuf:*][vbuf:*]
+Magic|0xC8 0x11
+Response|[code:1]
+
+Method|putcat
+Request|[magic:2][ksiz:4][vsiz:4][kbuf:*][vbuf:*]
+Magic|0xC8 0x12
+Response|[code:1]
+
+Method|putshl
+Request|[magic:2][ksiz:4][vsiz:4][width:4][kbuf:*][vbuf:*]
+Magic|0xC8 0x13
+Response|[code:1]
+
+Method|putnr
+Request|[magic:2][ksiz:4][vsiz:4][kbuf:*][vbuf:*]
+Magic|0xC8 0x18
+Response|(none)
+
+Method|out
+Request|[magic:2][ksiz:4][kbuf:*]
+Magic|0xC8 0x20
+Response|[code:1]
+
+Method|get
+Request|[magic:2][ksiz:4][kbuf:*]
+Magic|0xC8 0x30
+Response|[code:1]([vsiz:4][vbuf:*])
+
+Method|mget
+Request|[magic:2][rnum:4][{[ksiz:4][kbuf:*]}:*]
+Magic|0xC8 0x31
+Response|[code:1][rnum:4][{[ksiz:4][vsiz:4][kbuf:*][vbuf:*]}:*]
+
+Method|vsiz
+Request|[magic:2][ksiz:4][kbuf:*]
+Magic|0xC8 0x38
+Response|[code:1]([vsiz:4])
+
+Method|iterinit
+Request|[magic:2]
+Magic|0xC8 0x50
+Response|[code:1]
+
+Method|iternext
+Request|[magic:2]
+Magic|0xC8 0x51
+Response|[code:1]([ksiz:4][kbuf:*])
+
+Method|fwmkeys
+Request|[magic:2][psiz:4][max:4][pbuf:*]
+Magic|0xC8 0x58
+Response|[code:1][knum:4][{[ksiz:4][kbuf:*]}:*]
+
+Method|addint
+Request|[magic:2][ksiz:4][num:4][kbuf:*]
+Magic|0xC8 0x60
+Response|[code:1]([sum:4])
+
+Method|adddouble
+Request|[magic:2][ksiz:4][integ:8][fract:8][kbuf:*]
+Magic|0xC8 0x61
+Response|[code:1]([integ:8][fract:8])
+
+Method|ext
+Request|[magic:2][nsiz:4][opts:4][ksiz:4][vsiz:4][nbuf:*][kbuf:*][vbuf:*]
+Magic|0xC8 0x68
+Response|[code:1]([rsiz:4][rbuf:*])
+
+Method|sync
+Request|[magic:2]
+Magic|0xC8 0x70
+Response|[code:1]
+
+Method|optimize
+Request|[magic:2][psiz:4][pbuf:*]
+Magic|0xC8 0x71
+Response|[code:1]
+
+Method|vanish
+Request|[magic:2]
+Magic|0xC8 0x72
+Response|[code:1]
+
+Method|copy
+Request|[magic:2][psiz:4][pbuf:*]
+Magic|0xC8 0x73
+Response|[code:1]
+
+Method|restore
+Request|[magic:2][psiz:4][ts:8][opts:4][pbuf:*]
+Magic|0xC8 0x74
+Response|[code:1]
+
+Method|setmst
+Request|[magic:2][hsiz:4][port:4][ts:8][opts:4][host:*]
+Magic|0xC8 0x78
+Response|[code:1]
+
+Method|rnum
+Request|[magic:2]
+Magic|0xC8 0x80
+Response|[code:1][rnum:8]
+
+Method|size
+Request|[magic:2]
+Magic|0xC8 0x81
+Response|[code:1][rnum:8]
+
+Method|stat
+Request|[magic:2]
+Magic|0xC8 0x88
+Response|[code:1][ssiz:4][sbuf:*]
+
+Method|misc
+Request|[magic:2][nsiz:4][opts:4][rnum:4][nbuf:*][{[asiz:4][abuf:*]}:*]
+Magic|0xC8 0x90
+Response|[code:1][rnum:4][{[esiz:4][ebuf:*]}:*]

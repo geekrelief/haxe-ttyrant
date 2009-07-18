@@ -1,0 +1,4 @@
+-main Parser
+-x parser
+-cp ../caffeine-hx
+-cp ..
