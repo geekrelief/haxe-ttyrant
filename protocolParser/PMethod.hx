@@ -197,7 +197,7 @@ class PMethod {
     function repRetVal(_stream:AS):Void {
         print("repRetVal");
         m_send.push("var success = (m_i.readByte() == 0);");
-        m_send.push("var val = null;");
+        m_send.push("var val:Bytes = null;");
         m_send.push("if(success) {");
         while(_stream.length > 0) {
             var c = _stream.shift();
@@ -216,6 +216,7 @@ class PMethod {
             }
         }
         m_send.push("}");
+        m_send.push("return val;");
     }
 
     function repRetValUnit(_stream:AS):Void {
@@ -269,7 +270,7 @@ class PMethod {
             case 8:
                 "(8);";
             default:
-                "("+_id.charAt(0)+"siz.length);";
+                "("+_id.charAt(0)+"siz);";
         }
     }
 

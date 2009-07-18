@@ -31,12 +31,8 @@ class Connection {
     }
 
     public function vanish():Bool {
-        var b = new BytesOutput();
-        b.bigEndian = true;
-        b.writeUInt16(51314);
-        m_o.write(b.getBytes());
-        var success = m_i.readByte();
-        return (success == 0);
+        m_o.writeUInt16(51314);
+        return (m_i.readByte() == 0);
     }
 
     public function put(_k:String, _v:Bytes):Bool {
@@ -48,35 +44,43 @@ class Connection {
         return (m_i.readByte() == 0);
     }
 
-    /*
-    public function put(_k:String, _v:Bytes):Bool {
-        var b = new BytesOutput();
-        b.bigEndian = true;
-        b.writeUInt16(51216);
-        b.writeInt31(_k.length);
-        b.writeInt31(_v.length);
-        b.writeString(_k);
-        b.write(_v);
-        m_o.write(b.getBytes());
-        var success:Int = m_i.readByte();
-        return (success == 0);
+    public function putkeep(_k:String, _v:Bytes):Bool {
+        m_o.writeUInt16(51217);
+        m_o.writeInt31(_k.length);
+        m_o.writeInt31(_v.length);
+        m_o.writeString(_k);
+        m_o.write(_v);
+        return (m_i.readByte() == 0);
+    }
+
+    public function putcat(_k:String, _v:Bytes):Bool {
+        m_o.writeUInt16(51218);
+        m_o.writeInt31(_k.length);
+        m_o.writeInt31(_v.length);
+        m_o.writeString(_k);
+        m_o.write(_v);
+        return (m_i.readByte() == 0);
+    }
+
+/*
+    public function putshl(_k:String):Bool {
+        m_o.writeUInt16(51219);
+        m_o.writeInt31(_k);
+        m_o.writeInt31(_v);
+        m_o.writeInt31(_w);
+        m_o.writeString(_k);
+        m_o.write(_v);
+        return (m_i.readByte() == 0);
     }
     */
 
     public function get(_k:String):Bytes {
-        var b = new BytesOutput();
-        b.bigEndian = true;
-        b.writeUInt16(51248);
-        b.writeInt31(_k.length);
-        b.writeString(_k);
-        m_o.write(b.getBytes());
-        var success = m_i.readByte();
+        m_o.writeUInt16(51248);
+        m_o.writeInt31(_k.length);
+        m_o.writeString(_k);
         var val:Bytes = null;
-        if (success == 0) {
-            var len = m_i.readInt31();
-            val = m_i.read(len);
-        }
+        if((m_i.readByte() == 0))
+            val = m_i.read(m_i.readInt31());
         return val;
     }
-
 }
