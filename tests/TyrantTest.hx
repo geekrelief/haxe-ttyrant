@@ -73,6 +73,57 @@ class Tests extends haxe.unit.TestCase {
         at(m_c.putcat("hyper", tob("shiny")));
         ae(tos(m_c.get("hyper")), "shiny");
     }
+
+    public function test_putshl() {
+        // put with shift left
+        at(m_c.putshl("rec", tob("0001"), 4));
+        at(m_c.putshl("rec", tob("1000"), 8));
+        ae(tos(m_c.get("rec")), "00011000");
+    }
+
+    public function test_putnr() {
+        m_c.putnr("project", tob("a-ko"));
+        ae(tos(m_c.get("project")), "a-ko");
+    }
+
+    public function test_out() {
+        m_c.put("a", tob("b"));
+        ae(tos(m_c.get("a")), "b");
+        m_c.out("a");
+        ae(m_c.get("a"), null);
+    }
+
+    public function test_mget() {
+        m_c.put("a", tob("1"));
+        m_c.put("b", tob("2"));
+        m_c.put("c", tob("3"));
+        m_c.put("d", tob("4"));
+        var keys = ["a", "b", "c", "d", "e", "f"];
+        var pairs = m_c.mget(keys);
+
+        ae(pairs.length, 4);
+
+        ae(pairs[0].k, "a");
+        ae(tos(pairs[0].v), "1");
+        ae(pairs[1].k, "b");
+        ae(tos(pairs[1].v), "2");
+        ae(pairs[2].k, "c");
+        ae(tos(pairs[2].v), "3");
+        ae(pairs[3].k, "d");
+        ae(tos(pairs[3].v), "4");
+
+        pairs = m_c.mget([]);
+        ae(pairs.length, 0);
+
+        pairs = m_c.mget(["abc"]);
+        ae(pairs.length, 0);
+    }
+
+    public function test_vsiz() {
+        m_c.put("e", tob("2.71828183"));
+        ae(m_c.vsiz("e"), "2.71828183".length);
+        ae(m_c.vsiz("f"), -1);
+    }
 }
 
 class TyrantTest {
