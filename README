@@ -5,6 +5,7 @@ http://tokyocabinet.sourceforge.net/tyrantdoc/
 To Build:
 Download caffeine-hx http://code.google.com/p/caffeine-hx/
     The binding depends on math.BigInteger and openssl.ndll for some methods.
+    And math.BigInteger's toInt method needs to be set to public.
 
 Checkout the tests directory for examples of usage. 
 There are comments in ttyrant/Connection.hx for method documentation, and the Tokyo Tyrant docs 
