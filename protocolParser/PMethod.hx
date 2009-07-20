@@ -196,9 +196,8 @@ class PMethod {
 
     function repRetVal(_stream:AS):Void {
         print("repRetVal");
-        m_send.push("var success = (m_i.readByte() == 0);");
-        m_send.push("var val:Bytes = null;");
-        m_send.push("if(success) {");
+        m_send.push("var val = null;");
+        m_send.push("if(m_i.readByte() == 0) {");
         while(_stream.length > 0) {
             var c = _stream.shift();
             switch(c) {

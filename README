@@ -1,0 +1,18 @@
+ttyrant - Tokyo Tyrant binary protocol binding for haxe/neko.
+
+http://tokyocabinet.sourceforge.net/tyrantdoc/
+
+To Build:
+Download caffeine-hx http://code.google.com/p/caffeine-hx/
+    The binding depends on math.BigInteger and openssl.ndll for some methods.
+
+Checkout the tests directory for examples of usage. 
+There are comments in ttyrant/Connection.hx for method documentation, and the Tokyo Tyrant docs 
+further explain the methods.
+
+ttyrant was built and tested on Ubuntu 8.10.  Before building the tests be sure to make
+a symlink to caffeine-hx in this directory.
+
+Some methods have not been thoroughly tested yet, so proceed with caution on important data.
+
+-Don Q.

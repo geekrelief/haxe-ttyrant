@@ -2,11 +2,14 @@ package ttyrant;
 
 import haxe.io.Bytes;
 import haxe.io.BytesOutput;
+import math.BigInteger;
 
 class Connection {
-    private var m_sock: neko.net.Socket;
-    private var m_i:neko.net.SocketInput;
-    private var m_o:neko.net.SocketOutput;
+    var m_sock: neko.net.Socket;
+    var m_i:neko.net.SocketInput;
+    var m_o:neko.net.SocketOutput;
+    var m_padding:Bytes;
+    static var B1000:BigInteger = BigInteger.ofInt(1000);
     
     public function new(?_host:String, ?_port:Int = 1978){
         m_sock = new neko.net.Socket();
@@ -14,6 +17,11 @@ class Connection {
         m_o = m_sock.output;
         m_i.bigEndian = true;
         m_o.bigEndian = true;
+        var bb = new BytesBuffer();
+        for(i in 0...8) {
+            bb.addByte(0);
+        }
+        m_padding = bb.getBytes();
         if(_host != null)
             connect(_host, _port);
     }
@@ -28,12 +36,6 @@ class Connection {
 
     public function setTimeout(_timeout:Float){
         m_sock.setTimeout(_timeout);
-    }
-
-    
-    public function vanish():Bool {
-        m_o.writeUInt16(51314);
-        return (m_i.readByte() == 0);
     }
 
     /*
@@ -180,4 +182,285 @@ class Connection {
         return val;
     }
 
+    /*
+        iterinit: for the function `tcrdbiterinit'
+        The function `tcrdbiterinit' is used in order to initialize the iterator of a remote database object.
+        If successful, the return value is true, else, it is false.
+        The iterator is used in order to access the key of every record stored in a database.
+     */
+    public function iterinit():Bool {
+        m_o.writeUInt16(51280);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        iternext: for the function `tcrdbiternext'
+        The function `tcrdbiternext' is used in order to get the next key of the iterator of a remote database object.
+        If successful, the return value is a key, else it is null.
+    */
+    public function iternext():String {
+        m_o.writeUInt16(51281);
+        var val:String = null;
+        if((m_i.readByte() == 0)) {
+            val = m_i.readString(m_i.readInt31());
+        }
+        return val;
+    }
+
+    /*
+        fwmkeys: for the function `tcrdbfwmkeys'
+        The function `tcrdbfwmkeys' is used in order to get forward (prefix) matching keys in a remote database object.
+        The return value is an Array of the corresponding keys. 
+        This function does not fail. It returns an empty list even if no key corresponds.
+    */
+    public function fwmkeys(_p:String, _max:Int):Array<String> {
+        m_o.writeUInt16(51288);
+        m_o.writeInt31(_p.length);
+        m_o.writeInt31(_max);
+        m_o.writeString(_p);
+        var val:Array<String> = [];
+        if(m_i.readByte() == 0) {
+            var knum = m_i.readInt31();
+            for(i in 0...knum) {
+                val.push(m_i.readString(m_i.readInt31()));
+            }
+        }
+        return val;
+    }
+
+    /*
+        addint: for the function `tcrdbaddint'
+        The function `tcrdbaddint' is used in order to add an integer to a record in a remote database object.
+        If successful, the return value is the summation value, else, it is `INT_MIN'.
+        If the corresponding record exists, the value is treated as an integer and is added to. 
+        If no record corresponds, a new record of the additional value is stored.
+    */
+    public function addint(_k:String, _n:Int):Int {
+        m_o.writeUInt16(51296);
+        m_o.writeInt31(_k.length);
+        m_o.writeInt31(_n);
+        m_o.writeString(_k);
+        var val:Int = 0;
+        if(m_i.readByte() == 0) {
+            val = m_i.readInt31();
+        }
+        return val;
+    }
+
+    /*
+        The function `tcrdbadddouble' is used in order to add a real number to a record in a remote database object.
+        If successful, the return value is the sum, else null.
+        If the corresponding record exists, the value is treated as a real number and is added to. If no record corresponds, a new record of the additional value is stored.
+    */
+
+    public function adddouble(_k:String, _f:Float):Float {
+        var i = Math.floor(_f);
+        var bi = BigInteger.ofInt(i);
+        var f = Std.int((_f % i) * 1e+9);
+        var bf = BigInteger.ofInt(f).mul(B1000);
+
+        m_o.writeUInt16(51297);
+        m_o.writeInt31(_k.length);
+        m_o.writeBytes(m_padding, 0, 8-bi.toBytes().length);
+        m_o.write(bi.toBytes());
+        m_o.writeBytes(m_padding, 0, 8-bf.toBytes().length);
+        m_o.write(bf.toBytes());
+        m_o.writeString(_k);
+        var val:Float = null;
+        if(m_i.readByte() == 0) {
+            var vi = BigInteger.ofBytes(m_i.read(8)).toInt();
+            var vf = BigInteger.ofBytes(m_i.read(8)).div(B1000).toInt()*1e-9;
+            val = vi+vf;
+        }
+        return val;
+    }
+
+
+    /*
+    The function `tcrdbext' is used in order to call a function of the script language extension.
+    If successful, the return value is the pointer to the region of the value of the response. `NULL' is returned on failure.
+    Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a character string. Because the region of the return value is allocated with the `malloc' call, it should be released with the `free' call when it is no longer in use.
+
+    public function ext(_k:String):Bool {
+        m_o.writeUInt16(51304);
+        m_o.writeInt31(_n);
+        m_o.writeInt31(_o);
+        m_o.writeInt31(_k);
+        m_o.writeInt31(_v);
+        m_o.write(_n);
+        m_o.writeString(_k);
+        m_o.write(_v);
+        var val = null;
+        if(m_i.readByte() == 0) {
+            var rsiz = m_i.readInt31();
+            var rbuf = m_i.read(rsiz);
+        }
+        return val;
+    }
+*/
+    /*
+        sync: for the function `tcrdbsync'
+        The function `tcrdbsync' is used in order to synchronize updated contents of a remote database object with the file and the device.
+        If successful, the return value is true, else, it is false.
+    */
+    public function sync():Bool {
+        m_o.writeUInt16(51312);
+        return (m_i.readByte() == 0);
+    }
+
+    /* 
+        optimize: for the function `tcrdboptimize'
+        The function `tcrdboptimize' is used in order to optimize the storage of a remove database object.
+        _p: string of tuning parameters
+        If successful, the return value is true, else, it is false.
+    */
+    public function optimize(_p:String):Bool {
+        m_o.writeUInt16(51313);
+        m_o.writeInt31(_p.length);
+        m_o.writeString(_p);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        vanish: for the function `tcrdbvanish'
+        The function `tcrdbvanish' is used in order to remove all records of a remote database object.
+        If successful, the return value is true, else, it is false.
+    */
+    public function vanish():Bool {
+        m_o.writeUInt16(51314);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        copy: for the function `tcrdbcopy'
+        The function `tcrdbcopy' is used in order to copy the database file of a remote database object.
+        _p: specifies the path of the destination file. If it begins with `@', the trailing substring is executed as a command line.
+        If successful, the return value is true, else, it is false. False is returned if the executed command returns non-zero code.
+        The database file is assured to be kept synchronized and not modified while the copying or executing operation is in progress. 
+        So, this function is useful to create a backup file of the database file.
+        This function fails and has no effect for on-memory database.
+    */
+    public function copy(_p:String):Bool {
+        m_o.writeUInt16(51315);
+        m_o.writeInt31(_p.length);
+        m_o.writeString(_p);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        restore: for the function `tcrdbrestore'
+        The function `tcrdbrestore' is used in order to restore the database file of a remote database object from the update log.
+        _p: specifies the path of the update log directory.
+        _t: specifies the beginning time stamp in microseconds.
+        _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
+        If successful, the return value is true, else, it is false.
+    */
+    public function restore(_p:String, _t:BigInteger, _o:haxe.Int32):Bool {
+        m_o.writeUInt16(51316);
+        m_o.writeInt31(_p.length);
+        m_o.write(_t.toBytes());
+        m_o.writeInt32(_o);
+        m_o.writeString(_p);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        setmst: for the function `tcrdbsetmst'
+        The function `tcrdbsetmst' is used in order to set the replication master of a remote database object.
+        _h: specifies the name or the address of the server. If it is `NULL', replication of the database is disabled.
+        _p: specifies the port number.
+        _t: specifies the beginning timestamp in microseconds.
+        _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
+        If successful, the return value is true, else, it is false. 
+    */
+    public function setmst(_h:String, _p:Int, _t:BigInteger, _o:haxe.Int32):Bool {
+        m_o.writeUInt16(51320);
+        m_o.writeInt31(_h.length);
+        m_o.writeInt31(_p);
+        m_o.write(_t.toBytes());
+        m_o.writeInt32(_o);
+        m_o.writeString(_h);
+        return (m_i.readByte() == 0);
+    }
+
+    /*
+        rnum: for the function `tcrdbrnum'
+        The function `tcrdbrnum' is used in order to get the number of records of a remote database object.
+    */
+    public function rnum():BigInteger {
+        m_o.writeUInt16(51328);
+        var val:BigInteger = null;
+        if(m_i.readByte() == 0) {
+            val = BigInteger.ofBytes(m_i.read(8));
+        }
+        return val;
+    }
+
+    /*
+        size: for the function `tcrdbsize'
+        The function `tcrdbsize' is used in order to get the size of the database of a remote database object.
+        The return value is the size of the database or 0 if the object does not connect to any database server.
+    */
+    public function size():BigInteger {
+        m_o.writeUInt16(51329);
+        var val:BigInteger = BigInteger.ofInt(0);
+        if(m_i.readByte() == 0) {
+            val = BigInteger.ofBytes(m_i.read(8));
+        }
+        return val;
+    }
+
+    /*
+        stat: for the function `tcrdbstat'
+        The function `tcrdbstat' is used in order to get the status string of the database of a remote database object.
+        The return value is a Hash filled with the status of the db, it is null if not connected to any database.
+        //The message format is TSV. The first field of each line means the parameter name and the second field means the value.
+    */
+    public function stat():Hash<String> {
+        m_o.writeUInt16(51336);
+        var val:Hash<String> = null;
+        if(m_i.readByte() == 0) {
+            val = new Hash();
+            var stat = m_i.readString(m_i.readInt31());
+            var astat = stat.split("\n");
+            for(s in astat) {
+                var kv = s.split("\t");
+                val.set(kv[0], kv[1]);
+            }
+        }
+        return val;
+    }
+
+    /*
+        misc: for the function `tcrdbmisc'
+        The function `tcrdbmisc' is used in order to call a versatile function for miscellaneous operations of a remote database object.
+        _n: specifies the name of the function. 
+            All databases support "put", "out", "get", "putlist", "outlist", and "getlist". 
+            "put" is to store a record. It receives a key and a value, and returns an empty list. 
+            "out" is to remove a record. It receives a key, and returns an empty list. 
+            "get" is to retrieve a record. It receives a key, and returns a list of the values. 
+            "putlist" is to store records. It receives keys and values one after the other, and returns an empty list. 
+            "outlist" is to remove records. It receives keys, and returns an empty list. 
+            "getlist" is to retrieve records. It receives keys, and returns keys and values of corresponding records one after the other.
+        _o: specifies options by bitwise-or: `RDBMONOULOG' for omission of the update log.
+        _ab: specifies the Bytes of the argument list.
+        If successful, the return value is a list object of the result. `NULL' is returned on failure.
+    */
+    public function misc(_n:String, _o:haxe.Int32, _alen:Int, _ab:Bytes):Array<Bytes> {
+        m_o.writeUInt16(51344);
+        m_o.writeInt31(_n.length);
+        m_o.writeInt32(_o);
+        m_o.writeInt31(_alen);
+        m_o.writeString(_n);
+        m_o.write(_ab);
+        var val:Array<Bytes> = null;
+        if(m_i.readByte() == 0) {
+            var rnum = m_i.readInt31();
+            val = [];
+            for(i in 0...rnum) {
+                val.push(m_i.read(m_i.readInt31()));
+            }
+        }
+        return val;
+    }
 }
