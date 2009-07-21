@@ -21,7 +21,8 @@ class Connection {
     var m_i:neko.net.SocketInput;
     var m_o:neko.net.SocketOutput;
     var m_padding:Bytes;
-    static var B1000:BigInteger = BigInteger.ofInt(1000);
+    static var B1e3:BigInteger = BigInteger.ofInt(1000);
+    static var B1e6:BigInteger = BigInteger.ofInt(1000000);
     
     public function new(?_host:String, ?_port:Int = 1978){
         m_sock = new neko.net.Socket();
@@ -48,6 +49,13 @@ class Connection {
 
     public function setTimeout(_timeout:Float){
         m_sock.setTimeout(_timeout);
+    }
+
+    public function toMicro(_f:Float):BigInteger {
+        var i = Math.floor(_f);
+        var f = Std.int((_f % i) * 1e+6);
+        var bi = BigInteger.ofInt(i).mul(B1e6);
+        return bi.add(BigInteger.ofInt(f));
     }
 
     /*
@@ -269,7 +277,7 @@ class Connection {
         var i = Math.floor(_f);
         var bi = BigInteger.ofInt(i);
         var f = Std.int((_f % i) * 1e+9);
-        var bf = BigInteger.ofInt(f).mul(B1000);
+        var bf = BigInteger.ofInt(f).mul(B1e3);
 
         m_o.writeUInt16(51297);
         m_o.writeInt31(_k.length);
@@ -281,7 +289,7 @@ class Connection {
         var val:Float = null;
         if(m_i.readByte() == 0) {
             var vi = BigInteger.ofBytes(m_i.read(8)).toInt();
-            var vf = BigInteger.ofBytes(m_i.read(8)).div(B1000).toInt()*1e-9;
+            var vf = BigInteger.ofBytes(m_i.read(8)).div(B1e3).toInt()*1e-9;
             val = vi+vf;
         }
         return val;
@@ -363,14 +371,16 @@ class Connection {
         restore: for the function `tcrdbrestore'
         The function `tcrdbrestore' is used in order to restore the database file of a remote database object from the update log.
         _p: specifies the path of the update log directory.
-        _t: specifies the beginning time stamp in microseconds.
+        _t: specifies the beginning time stamp in seconds.
         _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
         If successful, the return value is true, else, it is false.
     */
-    public function restore(_p:String, _t:BigInteger, _o:Int):Bool {
+    public function restore(_p:String, _t:Float, _o:Int):Bool {
         m_o.writeUInt16(51316);
         m_o.writeInt31(_p.length);
-        m_o.write(_t.toBytes());
+        var bt = toMicro(_t);
+        m_o.writeBytes(m_padding, 0, 8-bt.toBytes().length);
+        m_o.write(bt.toBytes());
         m_o.writeInt31(_o);
         m_o.writeString(_p);
         return (m_i.readByte() == 0);
@@ -385,13 +395,14 @@ class Connection {
         _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
         If successful, the return value is true, else, it is false. 
     */
-    public function setmst(_h:String, _p:Int, _t:BigInteger, _o:haxe.Int32):Bool {
+    public function setmst(_h:String, _p:Int, _t:BigInteger, _o:Int):Bool {
         m_o.writeUInt16(51320);
-        m_o.writeInt31(_h.length);
+        m_o.writeInt31((_h != null) ? _h.length : 0);
         m_o.writeInt31(_p);
+        m_o.writeBytes(m_padding, 0, 8-_t.toBytes().length);
         m_o.write(_t.toBytes());
-        m_o.writeInt32(_o);
-        m_o.writeString(_h);
+        m_o.writeInt31(_o);
+        if(_h != null) m_o.writeString(_h);
         return (m_i.readByte() == 0);
     }
 

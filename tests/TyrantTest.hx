@@ -9,7 +9,7 @@ class Tests extends haxe.unit.TestCase {
     
     override public function setup():Void {
         m_c = new Connection();
-        m_c.connect("127.0.0.1", 1978);
+        m_c.connect("127.0.0.1", 19789);
         m_c.vanish();
     }
 
@@ -215,17 +215,20 @@ class Tests extends haxe.unit.TestCase {
     public function test_copy() {
         // copy db to file
         m_c.put("a", fs("1"));
-        af(m_c.copy("store.backup")); // if on memory false
-        //at(m_c.copy("store.backup")); // if on disk true
+        //af(m_c.copy("test_run/store.backup")); // if on memory false
+        at(m_c.copy("test_run/store.backup")); // if on disk true
     }
 
-    /*
     public function test_restore() {
+        // restore from update log in ulog-back
+        ae(m_c.get("one"), null);
+        at(m_c.restore("ulog-back", 1.0, 0));
+        ae(tos(m_c.get("one")), "first");
     }
-    */
 
     /*
     public function test_setmst() {
+
     }
     */
 

@@ -1,0 +1,2 @@
+#! /bin/sh
+ttserver -port 19789 -ext test.lua -ulog test_run/ulog -sid 1 test_run/casket.tch

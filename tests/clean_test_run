@@ -1,0 +1,4 @@
+#!/bin/sh
+rm -rf test_run/ulog
+rm test_run/store.backup
+rm test_run/casket.tch
