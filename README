@@ -11,15 +11,22 @@ Download caffeine-hx http://code.google.com/p/caffeine-hx/
 Tests:
     Checkout the tests/TyrantTest.hx for examples of usage. 
 
-    To run the tests successfully, run: 
+    To run the tests successfully, two servers on ports 19789 and 19790 will be needed.  
+    The can be started with scripts in the tests folder like so:
+
     cd tests
-    ./setup_test_run
-    ttserver -port 19789 -ext test.lua -ulog test_run/ulog -sid 1 test_run/casket.tch
+    ./start_ttserver
+
+    in a new prompt start a second server:
+    cd tests
+    ./setmst_testserver
+
+    in a new prompt:
+    cd tests
     haxe compile.hxml 
 
-    Cleaning up test_run data:
-    cd tests
-    ./clean_test_run
+    Cleaning up:
+    Ctrl-C on both the server windows
 
 There are comments in ttyrant/Connection.hx for method documentation, and the Tokyo Tyrant docs 
 further explain the methods.

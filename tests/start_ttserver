@@ -1,2 +1,13 @@
 #! /bin/sh
-ttserver -port 19789 -ext test.lua -ulog test_run/ulog -sid 1 test_run/casket.tch
+rm -rf test_run/ulog1
+rm test_run/store.backup
+rm test_run/casket1.tch
+rm -rf test_run/ulog2
+rm test_run/casket2.tch
+mkdir test_run/ulog1
+ttserver -port 19789 -ext test.lua -ulog test_run/ulog1 -sid 1 test_run/casket1.tch
+rm -rf test_run/ulog1
+rm test_run/store.backup
+rm test_run/casket1.tch
+rm -rf test_run/ulog2
+rm test_run/casket2.tch

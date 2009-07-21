@@ -389,18 +389,19 @@ class Connection {
     /*
         setmst: for the function `tcrdbsetmst'
         The function `tcrdbsetmst' is used in order to set the replication master of a remote database object.
-        _h: specifies the name or the address of the server. If it is `NULL', replication of the database is disabled.
+        _h: specifies the name or the address of the server. If it is `null', replication of the database is disabled.
         _p: specifies the port number.
-        _t: specifies the beginning timestamp in microseconds.
+        _t: specifies the beginning timestamp in seconds.
         _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
         If successful, the return value is true, else, it is false. 
     */
-    public function setmst(_h:String, _p:Int, _t:BigInteger, _o:Int):Bool {
+    public function setmst(_h:String, _p:Int, _t:Float, _o:Int):Bool {
         m_o.writeUInt16(51320);
         m_o.writeInt31((_h != null) ? _h.length : 0);
         m_o.writeInt31(_p);
-        m_o.writeBytes(m_padding, 0, 8-_t.toBytes().length);
-        m_o.write(_t.toBytes());
+        var bt = toMicro(_t);
+        m_o.writeBytes(m_padding, 0, 8-bt.toBytes().length);
+        m_o.write(bt.toBytes());
         m_o.writeInt31(_o);
         if(_h != null) m_o.writeString(_h);
         return (m_i.readByte() == 0);

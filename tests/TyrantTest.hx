@@ -226,11 +226,18 @@ class Tests extends haxe.unit.TestCase {
         ae(tos(m_c.get("one")), "first");
     }
 
-    /*
     public function test_setmst() {
-
+        // to test setmst
+        // from prompt:
+        // ttserver -port 19790 -host localhost -ulog test_run/ulog2 -sid 2 test_run/casket2.tch
+        m_c.put("one", fs("first"));
+        var c = new Connection();
+        c.connect("localhost", 19790);
+        at(c.setmst("localhost", 19789, 1.0, 0));
+        neko.Sys.sleep(2);
+        ae(tos(c.get("one")), "first");
+        c.close();
     }
-    */
 
     public function test_rnum() {
         // number of records
