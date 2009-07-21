@@ -5,6 +5,18 @@ import haxe.io.BytesOutput;
 import math.BigInteger;
 
 class Connection {
+
+    /* Options */
+                                            // ext options
+    public static var RDBXOLCKREC = 1 << 0; // record locking
+    public static var RDBXOLCKGLB = 1 << 1; // global locking
+
+                                            // restore options
+    public static var RDBROCHKCON = 1 << 0; // consistency checking
+
+                                            // misc operations options
+    public static var RDBMONOULOG = 1 << 0; // omisssion of update log
+
     var m_sock: neko.net.Socket;
     var m_i:neko.net.SocketInput;
     var m_o:neko.net.SocketOutput;
@@ -277,27 +289,27 @@ class Connection {
 
 
     /*
-    The function `tcrdbext' is used in order to call a function of the script language extension.
-    If successful, the return value is the pointer to the region of the value of the response. `NULL' is returned on failure.
-    Because an additional zero code is appended at the end of the region of the return value, the return value can be treated as a character string. Because the region of the return value is allocated with the `malloc' call, it should be released with the `free' call when it is no longer in use.
-
-    public function ext(_k:String):Bool {
+        The function `tcrdbext' is used in order to call a function of the script language extension.
+        _n: specifies the function name.
+        _o: specifies options by bitwise-or: `RDBXOLCKREC' for record locking, `RDBXOLCKGLB' for global locking.
+        If successful, the return value is a Bytes object, else, it is null.
+    */
+    public function ext(_n:String, ?_k:String = null, ?_v:Bytes = null, ?_o:Int = 0):Bytes {
         m_o.writeUInt16(51304);
-        m_o.writeInt31(_n);
+        m_o.writeInt31(_n.length);
         m_o.writeInt31(_o);
-        m_o.writeInt31(_k);
-        m_o.writeInt31(_v);
-        m_o.write(_n);
-        m_o.writeString(_k);
-        m_o.write(_v);
-        var val = null;
+        m_o.writeInt31((_k != null) ? _k.length : 0);
+        m_o.writeInt31((_v != null) ? _v.length : 0);
+        m_o.writeString(_n);
+        if(_k != null) m_o.writeString(_k);
+        if(_v != null) m_o.write(_v);
+        var val:Bytes = null;
         if(m_i.readByte() == 0) {
-            var rsiz = m_i.readInt31();
-            var rbuf = m_i.read(rsiz);
+            val = m_i.read(m_i.readInt31());
         }
         return val;
     }
-*/
+
     /*
         sync: for the function `tcrdbsync'
         The function `tcrdbsync' is used in order to synchronize updated contents of a remote database object with the file and the device.
@@ -355,11 +367,11 @@ class Connection {
         _o: specifies options by bitwise-or: `RDBROCHKCON' for consistency checking.
         If successful, the return value is true, else, it is false.
     */
-    public function restore(_p:String, _t:BigInteger, _o:haxe.Int32):Bool {
+    public function restore(_p:String, _t:BigInteger, _o:Int):Bool {
         m_o.writeUInt16(51316);
         m_o.writeInt31(_p.length);
         m_o.write(_t.toBytes());
-        m_o.writeInt32(_o);
+        m_o.writeInt31(_o);
         m_o.writeString(_p);
         return (m_i.readByte() == 0);
     }
@@ -446,10 +458,10 @@ class Connection {
         _ab: specifies the Bytes of the argument list.
         If successful, the return value is a list object of the result. `NULL' is returned on failure.
     */
-    public function misc(_n:String, _o:haxe.Int32, _alen:Int, _ab:Bytes):Array<Bytes> {
+    public function misc(_n:String, _o:Int, _alen:Int, _ab:Bytes):Array<Bytes> {
         m_o.writeUInt16(51344);
         m_o.writeInt31(_n.length);
-        m_o.writeInt32(_o);
+        m_o.writeInt31(_o);
         m_o.writeInt31(_alen);
         m_o.writeString(_n);
         m_o.write(_ab);

@@ -189,11 +189,17 @@ class Tests extends haxe.unit.TestCase {
         ae(m_c.adddouble("a", 1.235), 2.469);
     }
 
-    /*
+    /* run ttserver -ext test.lua */
     public function test_ext() {
-        // todo
+        ae(tos(m_c.ext("fibonacci","1")), "1");
+        ae(tos(m_c.ext("fibonacci","4")), "3");
+        ae(tos(m_c.ext("fibnext")), "1");
+        ae(tos(m_c.ext("fibnext")), "1");
+        ae(tos(m_c.ext("fibnext")), "2");
+        ae(tos(m_c.ext("fibnext")), "3");
+        ae(tos(m_c.ext("fibnext")), "5");
     }
-    */
+    
 
     public function test_sync() {
         // sync to file
