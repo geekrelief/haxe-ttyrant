@@ -51,6 +51,14 @@ class Connection {
         m_sock.setTimeout(_timeout);
     }
 
+    public function host(): {port:Int, host:neko.net.Host} {
+        return m_sock.host();
+    }
+
+    public function peer(): {port:Int, host:neko.net.Host} {
+        return m_sock.peer();
+    }
+
     public function toMicro(_f:Float):BigInteger {
         var i = Math.floor(_f);
         var f = Std.int((_f % i) * 1e+6);
